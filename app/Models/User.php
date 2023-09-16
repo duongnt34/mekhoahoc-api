@@ -14,6 +14,11 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * @property mixed $name
+ * @property mixed $email
+ * @property mixed $password
+ */
 class User extends Authenticatable implements HasMedia
 {
     use HasRoles, HasApiTokens, HasFactory, Notifiable, InteractsWithMedia;

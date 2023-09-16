@@ -35,16 +35,21 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8'
+            'password' => 'required|min:8',
+            'avatar' => 'image|mimes:jpeg,png,jpg,webp,avif|max:2048'
+
         ]);
         $user = new User();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = Hash::make($request->password);
+        $user->name = $request->input('name');
+        $user->email = $request->input('email');;
+        $user->password = $request->input('password');;
         $user->save();
+
+        $user->addMedia($request->file('avatar'))->toMediaCollection('avatar');
 
         return response()->json([
             'success' => true,
+            'message' => 'Tạo tài khoản thành công'
         ], Response::HTTP_CREATED);
     }
 
@@ -77,6 +82,17 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        if ($id == '1') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể xóa Super Admin',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $user = User::findOrFail($id);
+        $user->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'Xóa thành công',
+        ], Response::HTTP_OK);
     }
 }
