@@ -18,7 +18,9 @@ class RoleResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'roles' => $this->permissions
+            'permissions' => $this->permissions->map(function ($permission) {
+                return $permission->name;
+            })->toArray()
         ];
     }
 

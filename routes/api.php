@@ -30,4 +30,5 @@ Route::resource('users', UserController::class);
 Route::resource('roles', RoleController::class);
 Route::resource('permissions', PermissionController::class);
 Route::get('/get-permission-options', [PermissionController::class, 'getPermissionOptions']);
+Route::get('/get-role-options', [RoleController::class, 'getRoleOptions']);
 

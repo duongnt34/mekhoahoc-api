@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RoleResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
@@ -12,7 +14,7 @@ class RoleController extends Controller
 
     public function __construct()
     {
-        $this->middleware(['role:Admin']);
+        $this->middleware(['permission:roles.create|roles.edit|roles.delete']);
     }
 
     /**
@@ -35,21 +37,22 @@ class RoleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|unique:roles,name',
-            'roles' => 'required'
+            'permissions' => 'required'
         ]);
 
         $role = new Role();
         $role->name = $request->input('name');
         $role->save();
 
-        $role->syncPermissions($request->roles);
+        $role->syncPermissions($request->permissions);
 
-        $roles = Role::orderBy('created_at', 'desc')->get();
-        return RoleResource::collection($roles);
+        return response()->json([
+            'success' => true,
+        ], Response::HTTP_CREATED);
     }
 
     /**
@@ -73,14 +76,55 @@ class RoleController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'name' => '|unique:roles,name,'.$id,
+            'permissions' => ''
+        ]);
+
+        $role = Role::find($id);
+        $role->name = $request->input('name');
+        $role->save();
+
+        $role->syncPermissions($request->permissions);
+
+        return response()->json([
+            'success' => true,
+        ], Response::HTTP_OK);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): JsonResponse
     {
-        //
+        if ($id == '1') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể xóa Super Admin',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $role = Role::findOrFail($id);
+        $role->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xóa thành công',
+        ], Response::HTTP_OK);
+
+    }
+
+    public function getRoleOptions(): JsonResponse
+    {
+        $roles = Role::select('id', 'name')->orderBy('name')->get()->map(function ($role) {
+            return [
+                "value" => $role->name,
+                "label" => $role->name
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'roles' => $roles
+        ], Response::HTTP_OK);
     }
 }

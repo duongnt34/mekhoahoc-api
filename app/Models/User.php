@@ -18,6 +18,9 @@ use Spatie\Permission\Traits\HasRoles;
  * @property mixed $name
  * @property mixed $email
  * @property mixed $password
+ * @method static findOrFail(string $id)
+ * @method static orderBy(string $string, string $string1)
+ * @method static find(string $id)
  */
 class User extends Authenticatable implements HasMedia
 {
